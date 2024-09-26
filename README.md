@@ -49,5 +49,20 @@ IAM credentials with the enclave.
 The following key policy is used to lock down the key:
 TODO: describe key policy
 
+# AWS setup
+TODO: describe how to setup AWS, including IAM role.
+
 # Building and running foobar-service
-TODO: describe build process
+Use the following command from your EC2 instance to build & run the enclave:
+```
+./build-and-run-enclave.sh
+```
+
+You can then build and run the CLI:
+```
+cd foobar-instance
+go build .
+
+# create-key requires root to bind to vsock
+sudo ./foobar-instance create-key
+```
