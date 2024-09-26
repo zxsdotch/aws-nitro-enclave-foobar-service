@@ -52,6 +52,9 @@ TODO: describe key policy
 ### Encryption
 TODO: explain CEK derived using an ephemeral key.
 
+### Decryption
+TODO: explain attestation + encrypted-CEK
+
 # AWS setup
 TODO: describe how to setup AWS, including IAM role.
 
@@ -72,4 +75,6 @@ sudo ./foobar-instance create-key
 # verify the attestation and encrypt a message
 CIPHERTEXT=`./foobar-instance encrypt --plaintext="attack at dawn"`
 
+# ask enclave to decrypt ciphertext and return count of 'a'
+./foobar-instance decrypt --ciphertext $CIPHERTEXT
 ```

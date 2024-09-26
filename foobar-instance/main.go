@@ -19,6 +19,11 @@ var (
 	encryptAttestationPath = encryptCmd.Flag("attestationPath", "Path to read attestation from, as returned by createKey command.").Default("./attestation.out").String()
 	encryptRootPath        = encryptCmd.Flag("rootPath", "Path to Enclave PKI root CA file").Default("./root.pem").String()
 	encryptPlaintext       = encryptCmd.Flag("plaintext", "Text to encrypt.").Required().String()
+
+	decryptCmd             = app.Command("decrypt", "Decrypt ciphertext and get the count of 'a'.")
+	decryptAttestationPath = decryptCmd.Flag("attestationPath", "Path to read attestation from, as returned by createKey command.").Default("./attestation.out").String()
+	decryptRootPath        = decryptCmd.Flag("rootPath", "path to root CA file").Default("./root.pem").String()
+	decryptCiphertext      = decryptCmd.Flag("ciphertext", "text to decrypt").Required().String()
 )
 
 func main() {
@@ -29,6 +34,8 @@ func main() {
 		cmds.CreateKey(ctx, *createKeyCmdRole, *createKeyAttestationPath)
 	case encryptCmd.FullCommand():
 		cmds.Encrypt(*encryptAttestationPath, *encryptRootPath, *encryptPlaintext)
+	case decryptCmd.FullCommand():
+		cmds.Decrypt(ctx, *decryptAttestationPath, *decryptRootPath, *decryptCiphertext)
 	default:
 		panic("invalid command")
 	}

@@ -13,7 +13,7 @@ import (
 	"net"
 
 	"github.com/mdlayher/vsock"
-	"github.com/zxsdotch/aws-nitro-enclave-experiments/foobar-enclave/cmds"
+	"github.com/zxsdotch/aws-nitro-enclave-experiments/foobar-enclave/handlers"
 	"github.com/zxsdotch/aws-nitro-enclave-experiments/foobar-shared/constants"
 	"github.com/zxsdotch/aws-nitro-enclave-experiments/foobar-shared/messages"
 	"github.com/zxsdotch/aws-nitro-enclave-experiments/foobar-shared/utils"
@@ -57,7 +57,7 @@ func handleConnection(conn net.Conn) {
 	for scanner.Scan() {
 		ctx := context.TODO()
 
-		log.Println("recv: ", scanner.Text())
+		log.Printf("recv: %+v", scanner.Text())
 		var req messages.FoobarRequest
 		var res messages.FoobarResponse
 
@@ -67,7 +67,11 @@ func handleConnection(conn net.Conn) {
 			err = fmt.Errorf("json.Unmarshal failed: %w", err)
 		} else {
 			if req.CreateKey != nil {
-				res.CreateKey, err = cmds.CreateKeyHandler(ctx, *req.CreateKey)
+				res.CreateKey, err = handlers.CreateKeyHandler(ctx, *req.CreateKey)
+			} else if req.GetAttestation != nil {
+				res.GetAttestation, err = handlers.GetAttestationHandler(ctx, ephemeralRsaKey, *req.GetAttestation)
+			} else if req.Decrypt != nil {
+				res.Decrypt, err = handlers.DecryptHandler(ctx, ephemeralRsaKey, *req.Decrypt)
 			} else {
 				err = fmt.Errorf("unexpected command")
 			}
@@ -76,7 +80,7 @@ func handleConnection(conn net.Conn) {
 		if err != nil {
 			res.Error = utils.Ref(err.Error())
 		}
-		log.Println("send: %v", res)
+		log.Printf("send: %+v", res)
 		resBytes, err := json.Marshal(res)
 		utils.PanicOnErr(err)
 		conn.Write(resBytes)

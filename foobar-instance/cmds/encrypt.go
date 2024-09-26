@@ -27,13 +27,10 @@ import (
 //    key.
 
 func Encrypt(attestationPath, rootPath, plaintext string) {
-	attestationEncoded, err := os.ReadFile(attestationPath)
+	attestationBytes, err := os.ReadFile(attestationPath)
 	utils.PanicOnErr(err)
 
 	root, err := os.ReadFile(rootPath)
-	utils.PanicOnErr(err)
-
-	attestationBytes, err := base64.RawURLEncoding.DecodeString(string(attestationEncoded))
 	utils.PanicOnErr(err)
 
 	rootPublicKeyBlock, _ := pem.Decode(root)
@@ -78,8 +75,10 @@ func Encrypt(attestationPath, rootPath, plaintext string) {
 	ciphertext := aesgcm.Seal(nil, nonce, []byte(plaintext), nil)
 
 	// Step 5: print the result
+	ephemeralEcdsaKeyPublicKeyBytes, err := x509.MarshalPKIXPublicKey(&ephemeralEcdsaKey.PublicKey)
+	utils.PanicOnErr(err)
 	message := ciphertextMessage{
-		EphemeralKey: ephemeralEcdsaKey.PublicKey,
+		EphemeralKey: ephemeralEcdsaKeyPublicKeyBytes,
 		Nonce:        nonce,
 		Ciphertext:   ciphertext,
 	}
@@ -91,7 +90,7 @@ func Encrypt(attestationPath, rootPath, plaintext string) {
 }
 
 type ciphertextMessage struct {
-	EphemeralKey ecdsa.PublicKey `json:"e"`
-	Nonce        []byte          `json:"n"`
-	Ciphertext   []byte          `json:"c"`
+	EphemeralKey []byte `json:"e"`
+	Nonce        []byte `json:"n"`
+	Ciphertext   []byte `json:"c"`
 }

@@ -8,12 +8,13 @@ type CreateKeyRequest struct {
 }
 
 type CreateKeyResponse struct {
-	Attestation string `json:"attestation"`
+	Attestation []byte `json:"attestation"`
 }
 
 type AttestationUserData struct {
 	KeyId     string `json:"keyId"`
 	PublicKey []byte `json:"pubKey"`
+	Region    string
 }
 
 type Credentials struct {

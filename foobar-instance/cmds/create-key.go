@@ -82,7 +82,7 @@ func CreateKey(ctx context.Context, awsIamRole, attestationPath string) {
 
 	// Step 4:
 	//   Save the attestation for the next operation.
-	os.WriteFile(attestationPath, []byte(resp.CreateKey.Attestation), 644)
+	os.WriteFile(attestationPath, []byte(resp.CreateKey.Attestation), 0644)
 }
 
 // Quick and hacky proxy. Previous familiarity with

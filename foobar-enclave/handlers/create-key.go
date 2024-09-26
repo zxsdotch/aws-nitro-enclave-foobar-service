@@ -1,4 +1,4 @@
-package cmds
+package handlers
 
 import (
 	"context"
@@ -141,6 +141,7 @@ func CreateKeyHandler(ctx context.Context, req messages.CreateKeyRequest) (*mess
 	userData := messages.AttestationUserData{
 		KeyId:     *createKeyResult.KeyMetadata.KeyId,
 		PublicKey: getPublicKeyResult.PublicKey,
+		Region:    req.Region,
 	}
 	userDataBytes, err := json.Marshal(userData)
 	if err != nil {
@@ -162,7 +163,7 @@ func CreateKeyHandler(ctx context.Context, req messages.CreateKeyRequest) (*mess
 		return nil, errors.New("NSM did not return an attestation")
 	}
 
-	r.Attestation = base64.RawURLEncoding.EncodeToString(res.Attestation.Document)
+	r.Attestation = res.Attestation.Document
 
 	return r, nil
 }
