@@ -49,6 +49,9 @@ IAM credentials with the enclave.
 The following key policy is used to lock down the key:
 TODO: describe key policy
 
+### Encryption
+TODO: explain CEK derived using an ephemeral key.
+
 # AWS setup
 TODO: describe how to setup AWS, including IAM role.
 
@@ -65,4 +68,8 @@ go build .
 
 # create-key requires root to bind to vsock
 sudo ./foobar-instance create-key
+
+# verify the attestation and encrypt a message
+CIPHERTEXT=`./foobar-instance encrypt --plaintext="attack at dawn"`
+
 ```

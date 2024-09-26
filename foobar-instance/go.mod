@@ -4,6 +4,7 @@ go 1.21.4
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
+	github.com/alokmenghrajani/go-nitro-enclave-attestation-document v1.0.1
 	github.com/aws/aws-sdk-go-v2 v1.30.5
 	github.com/aws/aws-sdk-go-v2/config v1.27.33
 	github.com/aws/aws-sdk-go-v2/feature/ec2/imds v1.16.13
@@ -25,9 +26,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.26.7 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.30.7 // indirect
 	github.com/aws/smithy-go v1.20.4 // indirect
+	github.com/fxamacker/cbor/v2 v2.4.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/mdlayher/socket v0.4.1 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
+	github.com/veraison/go-cose v1.0.0-rc.1 // indirect
+	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
