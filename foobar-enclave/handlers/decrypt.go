@@ -18,7 +18,7 @@ import (
 	"github.com/zxsdotch/aws-nitro-enclave-experiments/foobar-shared/messages"
 )
 
-func DecryptHandler(ctx context.Context, ephemeralRsaKey *rsa.PrivateKey, req messages.DecryptRequest) (*messages.DecryptResponse, error) {
+func DecryptHandler(ctx context.Context, ephemeralRsaKey *rsa.PrivateKey, req messages.DecryptRequest, reqBytes []byte) (*messages.DecryptResponse, error) {
 	r := &messages.DecryptResponse{}
 
 	// Decrypt CEK
@@ -61,15 +61,13 @@ func DecryptHandler(ctx context.Context, ephemeralRsaKey *rsa.PrivateKey, req me
 
 	// Hash the inputs to defend against input swapping
 	h := sha256.New()
-	h.Write(req.EncryptedCek)
-	h.Write(req.Nonce)
-	h.Write(req.Ciphertext)
+	h.Write(reqBytes)
 
-	userData2 := messages.AttestationUserData2{
-		RequestSha256: h.Sum(nil),
-		Count:         count,
+	userData := messages.DecryptResponseAttestationUserData{
+		InitialRequest: h.Sum(nil),
+		Count:          count,
 	}
-	userData2Bytes, err := json.Marshal(userData2)
+	userDataBytes, err := json.Marshal(userData)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +80,7 @@ func DecryptHandler(ctx context.Context, ephemeralRsaKey *rsa.PrivateKey, req me
 
 	res, err := sess.Send(&request.Attestation{
 		Nonce:     []byte{},
-		UserData:  userData2Bytes,
+		UserData:  userDataBytes,
 		PublicKey: []byte{},
 	})
 	if err != nil {

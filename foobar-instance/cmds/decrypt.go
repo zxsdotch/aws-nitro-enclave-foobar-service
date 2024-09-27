@@ -41,22 +41,22 @@ func Decrypt(ctx context.Context, attestationPath, rootPath, ciphertext string) 
 	attestation, err := nitro_eclave_attestation_document.AuthenticateDocument(attestationBytes, *rootPublicKey, true)
 	utils.PanicOnErr(err)
 
-	var userData messages.AttestationUserData
+	var userData messages.CreateKeyResponseAttestationUserData
 	err = json.Unmarshal(attestation.UserData, &userData)
 	utils.PanicOnErr(err)
 
 	log.Printf("key id: %s", userData.KeyId)
 
 	// Step 2: grab the ephemeral ecdsa public key from the ciphertext message
-	ciphertextBytes, err := base64.RawURLEncoding.DecodeString(ciphertext)
+	ciphertextMessageBytes, err := base64.RawURLEncoding.DecodeString(ciphertext)
 	utils.PanicOnErr(err)
 	var ciphertextMessage ciphertextMessage
-	err = json.Unmarshal(ciphertextBytes, &ciphertextMessage)
+	err = json.Unmarshal(ciphertextMessageBytes, &ciphertextMessage)
 	utils.PanicOnErr(err)
 
 	// Step 3: request a fresh attestation from the enclave. We don't need to
 	// valdidate it, KMS takes care of that.
-	resp := sendRequest(messages.FoobarRequest{GetAttestation: &messages.GetAttestationRequest{}})
+	resp, _ := sendRequest(messages.FoobarRequest{GetAttestation: &messages.GetAttestationRequest{}})
 	freshAttestation := resp.GetAttestation.Attestation
 
 	// Step 4: get an encrypted-CEK from KMS
@@ -78,7 +78,7 @@ func Decrypt(ctx context.Context, attestationPath, rootPath, ciphertext string) 
 	log.Printf("Encrypted-CEK: %s", base64.RawURLEncoding.EncodeToString(deriveSharedSecretOutput.CiphertextForRecipient))
 
 	// Step 5: send the encrypted-CEK to the enclave
-	resp2 := sendRequest(messages.FoobarRequest{Decrypt: &messages.DecryptRequest{
+	resp2, msgBytes := sendRequest(messages.FoobarRequest{Decrypt: &messages.DecryptRequest{
 		EncryptedCek: deriveSharedSecretOutput.CiphertextForRecipient,
 		Nonce:        ciphertextMessage.Nonce,
 		Ciphertext:   ciphertextMessage.Ciphertext,
@@ -90,17 +90,15 @@ func Decrypt(ctx context.Context, attestationPath, rootPath, ciphertext string) 
 	log.Printf("attestation valid")
 	log.Printf("PCR0: %02x", responseAttestation.PCRs[0])
 
-	var response messages.AttestationUserData2
+	var response messages.DecryptResponseAttestationUserData
 	err = json.Unmarshal(responseAttestation.UserData, &response)
 	utils.PanicOnErr(err)
 
-	log.Printf("Request SHA-256: %02x", response.RequestSha256)
+	log.Printf("Request SHA-256: %02x", response.InitialRequest)
 
 	// Calculate expected sha
 	h := sha256.New()
-	h.Write(deriveSharedSecretOutput.CiphertextForRecipient)
-	h.Write(ciphertextMessage.Nonce)
-	h.Write(ciphertextMessage.Ciphertext)
+	h.Write(msgBytes)
 	log.Printf("expected:        %02x", h.Sum(nil))
 
 	fmt.Printf("Count 'a': %d\n", response.Count)

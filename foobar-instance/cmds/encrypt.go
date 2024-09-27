@@ -44,7 +44,7 @@ func Encrypt(attestationPath, rootPath, plaintext string) {
 	log.Printf("attestation valid")
 	log.Printf("PCR0: %02x", attestation.PCRs[0])
 
-	var userData messages.AttestationUserData
+	var userData messages.CreateKeyResponseAttestationUserData
 	err = json.Unmarshal(attestation.UserData, &userData)
 	utils.PanicOnErr(err)
 

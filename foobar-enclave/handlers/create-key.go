@@ -138,7 +138,7 @@ func CreateKeyHandler(ctx context.Context, req messages.CreateKeyRequest) (*mess
 	log.Printf("public key: %s\n", base64.RawURLEncoding.EncodeToString(getPublicKeyResult.PublicKey))
 
 	// Return the public key in an attestation
-	userData := messages.AttestationUserData{
+	userData := messages.CreateKeyResponseAttestationUserData{
 		KeyId:     *createKeyResult.KeyMetadata.KeyId,
 		PublicKey: getPublicKeyResult.PublicKey,
 		Region:    req.Region,

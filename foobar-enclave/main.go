@@ -58,11 +58,11 @@ func handleConnection(conn net.Conn) {
 		ctx := context.TODO()
 
 		log.Printf("recv: %+v", scanner.Text())
+		reqBytes := scanner.Bytes()
 		var req messages.FoobarRequest
 		var res messages.FoobarResponse
-
 		var err error
-		err = json.Unmarshal(scanner.Bytes(), &req)
+		err = json.Unmarshal(reqBytes, &req)
 		if err != nil {
 			err = fmt.Errorf("json.Unmarshal failed: %w", err)
 		} else {
@@ -71,7 +71,7 @@ func handleConnection(conn net.Conn) {
 			} else if req.GetAttestation != nil {
 				res.GetAttestation, err = handlers.GetAttestationHandler(ctx, ephemeralRsaKey, *req.GetAttestation)
 			} else if req.Decrypt != nil {
-				res.Decrypt, err = handlers.DecryptHandler(ctx, ephemeralRsaKey, *req.Decrypt)
+				res.Decrypt, err = handlers.DecryptHandler(ctx, ephemeralRsaKey, *req.Decrypt, reqBytes)
 			} else {
 				err = fmt.Errorf("unexpected command")
 			}

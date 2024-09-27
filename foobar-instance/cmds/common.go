@@ -11,7 +11,7 @@ import (
 	"github.com/zxsdotch/aws-nitro-enclave-experiments/foobar-shared/utils"
 )
 
-func sendRequest(req messages.FoobarRequest) messages.FoobarResponse {
+func sendRequest(req messages.FoobarRequest) (messages.FoobarResponse, []byte) {
 	log.Printf("Connecting to vsock (cid=%d, port=%d)\n", constants.ENCLAVE_CID, constants.ENCLAVE_LISTENING_PORT)
 	conn, err := vsock.Dial(constants.ENCLAVE_CID, constants.ENCLAVE_LISTENING_PORT, nil)
 	utils.PanicOnErr(err)
@@ -33,5 +33,5 @@ func sendRequest(req messages.FoobarRequest) messages.FoobarResponse {
 		log.Panicf("enclave error: %s\n", *resp.Error)
 	}
 
-	return resp
+	return resp, msgBytes
 }

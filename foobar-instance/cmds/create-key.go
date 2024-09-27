@@ -71,7 +71,7 @@ func CreateKey(ctx context.Context, awsIamRole, attestationPath string) {
 
 	// Step 3:
 	//   Tell enclave to create the key
-	resp := sendRequest(messages.FoobarRequest{
+	resp, _ := sendRequest(messages.FoobarRequest{
 		CreateKey: &messages.CreateKeyRequest{
 			Region:      region.Region,
 			AccountId:   arn.AccountID,
@@ -86,7 +86,7 @@ func CreateKey(ctx context.Context, awsIamRole, attestationPath string) {
 }
 
 // Quick and hacky proxy. Previous familiarity with
-// https://github.com/ghostunnel/ghostunnel helped!
+// https://github.com/ghostunnel/ghostunnel did help!
 
 type Proxy struct {
 	leftHost string
