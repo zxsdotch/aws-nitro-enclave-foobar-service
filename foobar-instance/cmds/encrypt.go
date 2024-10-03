@@ -5,13 +5,17 @@ import (
 	"crypto/cipher"
 	"crypto/ecdsa"
 	"crypto/rand"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
+	"io"
 	"log"
 	"os"
+
+	"golang.org/x/crypto/hkdf"
 
 	nitro_eclave_attestation_document "github.com/alokmenghrajani/go-nitro-enclave-attestation-document"
 	"github.com/zxsdotch/aws-nitro-enclave-experiments/foobar-shared/messages"
@@ -56,15 +60,21 @@ func Encrypt(attestationPath, rootPath, plaintext string) {
 	ephemeralEcdsaKey, err := ecdsa.GenerateKey(kmsPublicKey.Curve, rand.Reader)
 	utils.PanicOnErr(err)
 
-	// Step 3: derive a content encryption key (CEK)
+	// Step 3: derive a shared secret
 	privateKey, err := ephemeralEcdsaKey.ECDH()
 	utils.PanicOnErr(err)
 	publicKey, err := kmsPublicKey.ECDH()
 	utils.PanicOnErr(err)
-	cek, err := privateKey.ECDH(publicKey)
+	sharedSecret, err := privateKey.ECDH(publicKey)
 	utils.PanicOnErr(err)
 
-	// Step 4: AES-GCM encrypt plaintext with CEK
+	// Step 4: Derive a content encryption key (CEK) using a KDF.
+	hkdf := hkdf.New(sha256.New, sharedSecret, []byte("foobar-service-salt"), nil)
+	cek := make([]byte, 32)
+	_, err = io.ReadFull(hkdf, cek)
+	utils.PanicOnErr(err)
+
+	// Step 5: AES-GCM encrypt plaintext with CEK
 	block, err := aes.NewCipher(cek)
 	utils.PanicOnErr(err)
 	aesgcm, err := cipher.NewGCM(block)
@@ -74,7 +84,7 @@ func Encrypt(attestationPath, rootPath, plaintext string) {
 	utils.PanicOnErr(err)
 	ciphertext := aesgcm.Seal(nil, nonce, []byte(plaintext), nil)
 
-	// Step 5: print the result
+	// Step 6: print the result
 	ephemeralEcdsaKeyPublicKeyBytes, err := x509.MarshalPKIXPublicKey(&ephemeralEcdsaKey.PublicKey)
 	utils.PanicOnErr(err)
 	message := ciphertextMessage{

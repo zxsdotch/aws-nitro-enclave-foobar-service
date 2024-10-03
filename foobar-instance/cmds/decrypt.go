@@ -59,7 +59,7 @@ func Decrypt(ctx context.Context, attestationPath, rootPath, ciphertext string) 
 	resp, _ := sendRequest(messages.FoobarRequest{GetAttestation: &messages.GetAttestationRequest{}})
 	freshAttestation := resp.GetAttestation.Attestation
 
-	// Step 4: get an encrypted-CEK from KMS
+	// Step 4: get an encrypted-shared secret from KMS
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(userData.Region))
 	utils.PanicOnErr(err)
 
@@ -75,13 +75,13 @@ func Decrypt(ctx context.Context, attestationPath, rootPath, ciphertext string) 
 	})
 	utils.PanicOnErr(err)
 
-	log.Printf("Encrypted-CEK: %s", base64.RawURLEncoding.EncodeToString(deriveSharedSecretOutput.CiphertextForRecipient))
+	log.Printf("Encrypted shared secret: %s", base64.RawURLEncoding.EncodeToString(deriveSharedSecretOutput.CiphertextForRecipient))
 
-	// Step 5: send the encrypted-CEK to the enclave
+	// Step 5: send the encrypted shared secret to the enclave
 	resp2, msgBytes := sendRequest(messages.FoobarRequest{Decrypt: &messages.DecryptRequest{
-		EncryptedCek: deriveSharedSecretOutput.CiphertextForRecipient,
-		Nonce:        ciphertextMessage.Nonce,
-		Ciphertext:   ciphertextMessage.Ciphertext,
+		EncryptedSharedSecret: deriveSharedSecretOutput.CiphertextForRecipient,
+		Nonce:                 ciphertextMessage.Nonce,
+		Ciphertext:            ciphertextMessage.Ciphertext,
 	}})
 
 	// Step 6: verify attestation is valid and extract response.

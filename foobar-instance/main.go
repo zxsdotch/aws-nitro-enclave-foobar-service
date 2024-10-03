@@ -12,7 +12,7 @@ var (
 	app = kingpin.New("foorbar-instance", "The AWS EC2 instance part of Foobar Service.")
 
 	createKeyCmd             = app.Command("create-key", "Tells enclave to create an AWS KMS key. Sets up a vsock<=>kms proxy.")
-	createKeyCmdRole         = createKeyCmd.Flag("role", "AWS IAM Role").Default("nitro-test-iam-role").String()
+	createKeyCmdRole         = createKeyCmd.Flag("role", "AWS IAM Role").Default("aws-nitro-enclave-foobar-iam-role").String()
 	createKeyAttestationPath = createKeyCmd.Flag("attestationPath", "Path to save attestation").Default("./attestation.out").String()
 
 	encryptCmd             = app.Command("encrypt", "Encrypts a string to the KMS-backed key.")

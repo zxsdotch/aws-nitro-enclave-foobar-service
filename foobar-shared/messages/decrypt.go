@@ -3,9 +3,9 @@ package messages
 // Requests decryption. EncryptedCek comes from KMS and is formatted as CMS.
 // RSA is used to encrypt an AES key, which then encrypts the CEK with AES-CMS.
 type DecryptRequest struct {
-	EncryptedCek []byte `json:"cek"`
-	Nonce        []byte `json:"nonce"`
-	Ciphertext   []byte `json:"ciphertext"`
+	EncryptedSharedSecret []byte `json:"sharedSecret"`
+	Nonce                 []byte `json:"nonce"`
+	Ciphertext            []byte `json:"ciphertext"`
 }
 
 // Response is an attestation which contains DecryptResponseAttestationUserData.

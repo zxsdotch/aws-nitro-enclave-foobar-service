@@ -4,7 +4,8 @@
 > Web Services (AWS) resources. You will be billed for the various resources
 > you'll use. Make sure to delete and turn off resources you no longer need --
 > the code in this repo does not handle that aspect. A budget of $1.00/day
-> should be sufficient, but you exact expense will vary.
+> should be sufficient if you turn off resources when not in use, but your
+> exact expense will vary.
 
 ## Overview
 
@@ -57,7 +58,7 @@ key or alter the policy -- they can only delete the key.
         {
             "Effect": "Allow",
             "Principal": {
-                "AWS": "arn:aws:iam::123456789012:role/nitro-test-iam-role"
+                "AWS": "arn:aws:iam::123456789012:role/aws-nitro-enclave-foobar-iam-role"
             },
             "Action": "kms:GetPublicKey",
             "Resource": "*",
@@ -66,7 +67,7 @@ key or alter the policy -- they can only delete the key.
         {
             "Effect": "Allow",
             "Principal": {
-                "AWS": "arn:aws:iam::123456789012:role/nitro-test-iam-role"
+                "AWS": "arn:aws:iam::123456789012:role/aws-nitro-enclave-foobar-iam-role"
             },
             "Action": "kms:DeriveSharedSecret",
             "Resource": "*",
@@ -99,7 +100,8 @@ KMS or the enclave. The process to encrypt a string is:
 - extract the KMS-backed Ecdsa's public key from the attestation.
 - generate an ephemeral Ecdsa keypair.
 - use ECDH with the KMS-backed Ecdsa public key and the ephemeral Ecdsa private
-  key to derive a content encryption key (CEK).
+  key to derive a shared secret.
+- use HKDF to derive a content encryption key (CEK).
 - use AES-GCM to encrypt the plaintext with the CEK.
 - store the ephemeral Ecdsa's public key, nonce, and ciphertext as the encrypted
   message.
@@ -123,8 +125,8 @@ Decryption works as following:
   Better TLS ciphers are then protecting the data and AES-CBC becomes a
   non-issue. Users cannot pick alternate ciphers and are forced to use RSA with
   AES-CBC.
-- the enclave uses the ephemeral RSA key to decrypt the CEK. The enclave
-  decrypts the ciphertext.
+- the enclave uses the ephemeral RSA key to decrypt the shared secret. The
+  enclave then derives the content encryption key and decrypts the ciphertext.
 - the enclave returns a count of the letter 'a' in the plaintext inside an
   attestation. The attestation also contains a hash of the inputs (encrypted
   cek, nonce, and ciphertext).
@@ -177,14 +179,15 @@ The following cryptographic primitives need to be trusted:
   used for communication between the enclave and AWS KMS.
   - RSA and SHA-256 used during the TLS handshake to verify certificates.
   - Algorithms negotiated during the TLS handshake. Currently, the server favors
-    ECDH, AES-GCM, and SHA-384. The preferred ciphers can vary without notice.
+    ECDH, AES-GCM, and SHA-384. The preferred ciphersuit can vary without
+    notice.
   - Algorithms used by CRL and OCSP.
 - AES-GCM, used to encrypt the plaintext.
-- ECDH, used to derive the CEK.
+- ECDH and HDKF, used to derive the CEK.
 - RSA + AES-CBC, used to encrypt the CEK.
 - ECDSA signatures and SHA-384 used to verify attestations.
 
-You also has to trust your own hardware and software stack
+You also have to trust your own hardware and software stack
 (operating system, browser, etc.). You have to trust that your clock is somewhat
 accurate to ensure you aren't been served expired certificates.
 
