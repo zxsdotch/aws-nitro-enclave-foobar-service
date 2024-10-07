@@ -21,10 +21,10 @@ are documents signed with a key which is outside the control of AWS customers.
 The attestation proves that a given computation took place inside an AWS Nitro
 Enclave running a specific software.
 
-At a very high level, an attestation contains the SHA-384 hash of the image.
-Additional measurements (such as a hash of the AWS account id), and custom
-fields. The code running in the enclave can use the custom fields to return data
-which cannot be spoofed, e.g. a public key or a computation result.
+At a very high level, an attestation contains the SHA-384 hash of the file
+system. Additional measurements (such as a hash of the AWS account id), and
+custom fields. The code running in the enclave can use the custom fields to
+return data which cannot be spoofed, e.g. a public key or a computation result.
 
 ## Operations
 
@@ -132,7 +132,14 @@ Decryption works as following:
   cek, nonce, and ciphertext).
 
 ## AWS setup
-TODO: describe how to setup AWS, including IAM role.
+[AWS setup instructions](aws_setup/SETUP.md).
+
+Very rough AWS cost estimate.
+- EC2: $0.02 per hour for spot instances (in the cheapest region) or $0.04 per hour for on-demand instances.
+- EBS: $0.08 per GB per month.
+- KMS: $1 per key per month.
+- IPv4: $0.005 per hour (you can avoid this cost by only setting up IPv6).
+- Egress: $0.01 per GB.
 
 ## Building and running foobar-service
 Use the following command from your EC2 instance to build & run the enclave:
@@ -214,16 +221,15 @@ as well as various other secure compute environments. This code served an
 important starting point to deepen understanding.
 
 # Related Links
+- AWS
+  - [What is Nitro Enclaves?](https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave.html)
+  - [The Security Design of the AWS Nitro System](https://docs.aws.amazon.com/pdfs/whitepapers/latest/security-design-of-aws-nitro-system/security-design-of-aws-nitro-system.pdf#security-design-of-aws-nitro-system)
+  - [AWS Nitro System gets independent affirmation of its confidential compute capabilities](https://aws.amazon.com/blogs/compute/aws-nitro-system-gets-independent-affirmation-of-its-confidential-compute-capabilities/)
+  - [AWS Key Management Service](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html)
+  - [How AWS Nitro Enclaves uses AWS KMS](https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
+  - [aws-nitro-enclaves-image-format](https://github.com/aws/aws-nitro-enclaves-image-format)
+  - [aws-nitro-enclaves-sdk-c](https://github.com/aws/aws-nitro-enclaves-sdk-c)
 - Trail Of Bits
   - [A few notes on AWS Nitro Enclaves: Images and attestation](https://blog.trailofbits.com/2024/02/16/a-few-notes-on-aws-nitro-enclaves-images-and-attestation/)
   - [A few notes on AWS Nitro Enclaves: Attack surface](https://blog.trailofbits.com/2024/09/24/notes-on-aws-nitro-enclaves-attack-surface/)
-- [The Security Design of the AWS Nitro System](https://docs.aws.amazon.com/pdfs/whitepapers/latest/security-design-of-aws-nitro-system/security-design-of-aws-nitro-system.pdf#security-design-of-aws-nitro-system)
-- [AWS Nitro System gets independent affirmation of its confidential compute capabilities](https://aws.amazon.com/blogs/compute/aws-nitro-system-gets-independent-affirmation-of-its-confidential-compute-capabilities/)
-- [nitriding by Brave](https://github.com/brave/nitriding-daemon)
-- [What is Nitro Enclaves?](https://docs.aws.amazon.com/enclaves/latest/user/nitro-enclave.html)
-- [AWS Key Management Service](https://docs.aws.amazon.com/kms/latest/developerguide/overview.html)
-- [How AWS Nitro Enclaves uses AWS KMS](https://docs.aws.amazon.com/kms/latest/developerguide/services-nitro-enclaves.html)
-- AWS' GitHub repos
-  - [aws-nitro-enclaves-image-format](https://github.com/aws/aws-nitro-enclaves-image-format)
-  - [aws-nitro-enclaves-sdk-c](https://github.com/aws/aws-nitro-enclaves-sdk-c)
-  - etc.
+- Brave's [nitriding](https://github.com/brave/nitriding-daemon)
