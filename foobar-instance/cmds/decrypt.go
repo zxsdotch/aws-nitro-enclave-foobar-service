@@ -19,7 +19,7 @@ import (
 	"github.com/zxsdotch/aws-nitro-enclave-experiments/foobar-shared/utils"
 )
 
-// Decryption works as followingL
+// Decryption works as following:
 // 1. tell enclave to create an attestation with an ephemeral RSA key
 // 2. use the attestation with KMS to derive an encrypted CEK.
 // 3. give the ciphertext and CEK to the enclave.
